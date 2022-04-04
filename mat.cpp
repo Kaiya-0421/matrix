@@ -8,8 +8,8 @@
 using Eigen::MatrixXd;
 using namespace std;
 using namespace Eigen;
-#define M 1200
-#define N 1200
+#define M 1024
+#define N 1024
 void init(double Xmat[M][N]);                                                  //２次元配列の初期化関数
 void mymatrix(double m1[M][N], double m2[M][N], double result[M][N]);          //行列積関数
 void inimat(double m1[M][N], double m2[M][N], MatrixXd &mat1, MatrixXd &mat2); //自作行列関数用の配列同じランダム数を代入
@@ -24,8 +24,6 @@ double result[M][N];
 int main(void)
 {
 
-  // constexpr int M=565;
-  // constexpr int N=565;
   srand(1);
   double goukei;
   int i, j, k;
@@ -48,7 +46,7 @@ int main(void)
 
   //時間計測終了
   double elasped_time = (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec) * 1e-9;
-  printf("時間は%lfms\n", elasped_time);
+  printf("時間は%lfs\n", elasped_time);
   return 0;
 }
 
