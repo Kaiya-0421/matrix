@@ -1,8 +1,10 @@
-all: mat_a.cpp	
-	g++ mat_a.cpp -I /usr/local/include/eigen3 -std=c++14
-fn: mat_fn.cpp
-	g++ mat_fn.cpp -I /usr/local/include/eigen3 -std=c++14
-mat: mat.cpp
-	g++ mat.cpp -I /usr/local/include/eigen3 -std=c++14
 bl: mat_ch_bl.cpp
-	g++ mat_ch_bl.cpp -I /usr/local/include/eigen3 -std=c++14 
+	g++ mat_ch_bl.cpp -I /usr/local/include/eigen3 -std=c++14 -O3 -o $@
+bl2: block.cpp
+	g++ block.cpp -O3 -o $@
+omp: ompo.cpp
+	g++ omp.cpp -I /usr/local/include/eigen3 -std=c++14 -fopenmp -O3 -o $@
+clean:
+	\rm -rf a.out fn mat bl bl2 
+p: pthread.cpp
+	g++ pthread.cpp -I /usr/local/include/eigen3 -std=c++14 -fopenmp -lpthread -O3 -o $@
