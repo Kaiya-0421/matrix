@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <iostream>
-#include <Eigen/Dense>
+//#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
@@ -15,7 +16,7 @@ using namespace Eigen;
 #define p_N 512 
 #define bl 4 //ブロック数
 void init(double Xmat[M][N]);                                                  //２次元配列の初期化関数
-void mymatrix();
+void *mymatrix(void *args);
 void mymatrix2();          //行列積関数
 void inimat(double m1[M][N], double m2[M][N], MatrixXd &mat1, MatrixXd &mat2); //自作行列関数用の配列同じランダム数を代入
 // double sum(double result[M][N]);                                      //ずれの合計
@@ -41,8 +42,8 @@ int main(void)
   //時間計測開始
   clock_gettime(CLOCK_REALTIME, &start);
   //自作行列積関数
-  pthread_create(&t1, NULL, (void *)mymatrix, NULL);
-  pthread_create(&t2, NULL, (void *)mymatrix2, NULL);
+  pthread_create(&t1, NULL, mymatrix, NULL);
+  pthread_create(&t2, NULL, mymatrix2(), NULL);
   pthread_join(t1,NULL);
   pthread_join(t2,NULL);
   //行列積の終了時刻
@@ -80,7 +81,7 @@ void init(double Xmat[M][N])
     }
   }
 }
-void* mymatrix()
+void *mymatrix(void *args)
 {
   int i, k, j;
   int ii, kk, jj;
@@ -108,10 +109,10 @@ void* mymatrix()
             }
         }
     }
-
+    return NULL;
   //Mが
 }
-void* mymatrix2()
+void mymatrix2()
 {
   int i, k, j;
   int ii, kk, jj;
