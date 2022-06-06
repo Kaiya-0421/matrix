@@ -89,7 +89,7 @@ void init(double Xmat[M][N])
   }
 }
 void mymatrix(int *argv)//argvにスレッドごとの引数,スレッド数32こなら0~31の数字が渡されるはず...
-{ 
+{
   printf("%d\n",argv);
   int p_roop=*argv;
  // printf("%d\n",*p_roop);
