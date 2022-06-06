@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 //#include <Eigen/Dense>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <stdlib.h>
 #include <math.h> 
 #include <time.h>
@@ -17,7 +17,8 @@ using namespace Eigen;
 #define p_bl 64///p_bl*bl(ブロック数)=2048 //スレッドごとのループ数
 #define bl 32 //ブロック数
 void init(double Xmat[M][N]);                                                  //２次元配列の初期化関数
-void mymatrix(int *argv);      //行列積関数 argvにスレッドごとのループ開始位置を渡す
+//void mymatrix(int *argv);      //行列積関数 argvにスレッドごとのループ開始位置を渡す
+void *mymatrix(void *argv);      //行列積関数 argvにスレッドごとのループ開始位置を渡す
 void inimat(double m1[M][N], double m2[M][N], MatrixXd &mat1, MatrixXd &mat2); //自作行列関数用の配列同じランダム数を代入
 // double sum(double result[M][N]);                                      //ずれの合計
 double sum2(double result[M][N], MatrixXd &matresult2);
@@ -44,7 +45,7 @@ int main(void)
   //自作行列積関数
   int p=0;
   for(p=0;p<p_N;p++){
-    pthread_create(&t[p], NULL, (void *)mymatrix, (void *)&p);
+    pthread_create(&t[p], NULL, mymatrix, (void *)&p);
   }
   for(p=0;p<p_N;p++){
       pthread_join(t[p],NULL);
@@ -88,15 +89,16 @@ void init(double Xmat[M][N])
     }
   }
 }
-void mymatrix(int *argv)//argvにスレッドごとの引数,スレッド数32こなら0~31の数字が渡されるはず...
-{ 
-  printf("%d\n",argv);
-  int p_roop=*argv;
- // printf("%d\n",*p_roop);
+void *mymatrix(void *argv)//argvにスレッドごとの引数,スレッド数32こなら0~31の数字が渡されるはず...
+{
+  //printf("%d\n",*argv);
+  //int p_roop=*argv;
+  int *p_roop = (int*) argv;
+  printf("%d\n",*p_roop);
   int i, k, j;
   int ii, kk, jj;
   //#pragma omp parallel for num_threads(8)
-      for (ii = p_roop*p_bl; ii < (p_roop+1)*p_bl; ii += bl)
+      for (ii = (*p_roop)*p_bl; ii < ((*p_roop)+1)*p_bl; ii += bl)
     {
         for (jj = 0; jj < N; jj += bl)
         {
