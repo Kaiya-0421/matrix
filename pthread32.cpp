@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <iostream>
 //#include <Eigen/Dense>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <stdlib.h>
-#include <math.h>
+#include <math.h> 
 #include <time.h>
 #include <cmath>
 #include <omp.h>
@@ -11,13 +11,14 @@
 using Eigen::MatrixXd;
 using namespace std;
 using namespace Eigen;
-#define M 1024
-#define N 1024
-#define p_N 512 
-#define bl 4 //ブロック数
+#define M 2048
+#define N 2048
+#define p_N 32 //スレッド数
+#define p_bl 64///p_bl*bl(ブロック数)=2048 //スレッドごとのループ数
+#define bl 32 //ブロック数
 void init(double Xmat[M][N]);                                                  //２次元配列の初期化関数
-void *mymatrix(void *args);
-void *mymatrix2(void *args);          //行列積関数
+//void mymatrix(int *argv);      //行列積関数 argvにスレッドごとのループ開始位置を渡す
+void *mymatrix(void *argv);      //行列積関数 argvにスレッドごとのループ開始位置を渡す
 void inimat(double m1[M][N], double m2[M][N], MatrixXd &mat1, MatrixXd &mat2); //自作行列関数用の配列同じランダム数を代入
 // double sum(double result[M][N]);                                      //ずれの合計
 double sum2(double result[M][N], MatrixXd &matresult2);
@@ -27,7 +28,7 @@ MatrixXd matresult;
 double m1[M][N];
 double m2[M][N];
 double result[M][N];
-int psum1=0,psum2=0;
+int psum1=0;
 int main(void)
 {
 
@@ -35,17 +36,24 @@ int main(void)
   double goukei;
   int i, j, k;
   struct timespec start, end;
-  pthread_t t1, t2;
+  pthread_t t[p_N];
   //配列初期化
   init(result);
   inimat(m1, m2, mat1, mat2);
   //時間計測開始
   clock_gettime(CLOCK_REALTIME, &start);
   //自作行列積関数
-  pthread_create(&t1, NULL, mymatrix, NULL);
-  pthread_create(&t2, NULL, mymatrix2, NULL);
-  pthread_join(t1,NULL);
-  pthread_join(t2,NULL);
+  int p=0;
+  for(p=0;p<p_N;p++){
+    pthread_create(&t[p], NULL, mymatrix, (void *)&p);
+  }
+  for(p=0;p<p_N;p++){
+      pthread_join(t[p],NULL);
+  }
+
+
+
+
   //行列積の終了時刻
   clock_gettime(CLOCK_REALTIME, &end);
   //外部ライブラリ行列積関数
@@ -81,69 +89,36 @@ void init(double Xmat[M][N])
     }
   }
 }
-void *mymatrix(void *args)
+void *mymatrix(void *argv)//argvにスレッドごとの引数,スレッド数32こなら0~31の数字が渡されるはず...
 {
+  //printf("%d\n",*argv);
+  //int p_roop=*argv;
+  int *p_roop = (int*) argv;
+  printf("%d\n",*p_roop);
   int i, k, j;
   int ii, kk, jj;
   //#pragma omp parallel for num_threads(8)
-      for (ii = 0; ii < 512; ii += bl)
+      for (ii = (*p_roop)*p_bl; ii < ((*p_roop)+1)*p_bl; ii += bl)
     {
         for (jj = 0; jj < N; jj += bl)
         {
             for (kk = 0; kk < N; kk += bl)
             {
-
                 for (i = ii; i < ii+bl; i++)
                 {
-                    for (j = jj; j < jj+bl; j++)
+                    for (k = kk; k < kk+bl; k++)
                     {
-                        for (k = kk; k < kk+bl; k++)
+                        for (j = jj; j < jj+bl; j++)
                         {
                             result[i][j] += m1[i][k] * m2[k][j];
-                            ///
                            // psum1++;
-                            //
                         }
                     }
                 }
             }
-        }
+      }
     }
-    return NULL;
   
-}
-void *mymatrix2(void *args)
-{
-  int i, k, j;
-  int ii, kk, jj;
-  //#pragma omp parallel for num_threads(8)
-      for (ii = 512; ii < 1024; ii += bl)
-    {
-        for (jj = 0; jj < N; jj += bl)
-        {
-            for (kk = 0; kk < N; kk += bl)
-            {
-
-                for (i = ii; i < ii+bl; i++)
-                {
-                    for (j = jj; j < jj+bl; j++)
-                    {
-                        for (k = kk; k < kk+bl; k++)
-                        {
-                            result[i][j] += m1[i][k] * m2[k][j];
-
-                            ///
-                           // psum2++;
-                            ///
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-  return NULL;
-
 }
 
 double sum2(double result[M][N], MatrixXd &matresult2)

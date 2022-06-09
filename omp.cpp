@@ -75,8 +75,7 @@ void mymatrix(double m1[M][N], double m2[M][N], double result[M][N])
 {
   int i, k, j;
   int ii, kk, jj;
-  #pragma omp parallel for
-  omp_get_num_threads(4);
+  #pragma omp parallel for num_threads(16)
       for (ii = 0; ii < N; ii += bl)
     {
         for (jj = 0; jj < N; jj += bl)
